@@ -288,4 +288,32 @@ In `client/views/pages/` create a file called `home.html` and paste in the follo
 
 That takes care of our home page errors -- even if we have some broken routes. Don't worry. That's up next.
 
+###Remove boilerplate code
+
+To get rid of the rest of the boilerplate code, setup CORS for your mobile devices, and gear up for the first admin, change the following:
+
+Replace `client/main.js` with this
+```javascript
+import { Template } from 'meteor/templating';
+import { ReactiveVar } from 'meteor/reactive-var';
+
+import './main.html';
+```
+
+And replace `server/main.js` with this
+```javascript
+import { Meteor } from 'meteor/meteor';
+import { BrowserPolicy } from 'meteor/browser-policy-common';
+
+Meteor.startup(() => {
+  BrowserPolicy.content.allowOriginForAll('*');
+  // code to run on server at startup
+
+  // create admin from settings
+  if (Meteor.users.findOne(Meteor.settings.adminId)){
+    Roles.addUsersToRoles(Meteor.settings.adminId, ['admin']);
+  }
+}
+```
+
 ###Not Found and Authentication Routes
