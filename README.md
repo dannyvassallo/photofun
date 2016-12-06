@@ -42,7 +42,7 @@ Meteor will livereload EVERYTHING. Enjoy that.
 ####Adding Dependencies Up Front
 
 Meteor has it's own package system called [Atmosphere](https://atmospherejs.com/) that installs
-dependencies to `./meteor/package`. You can also use `npm i -S <package name>` to get node modules. You would import node modules the same way you are used to. Meteor packages are automatically available.
+dependencies to `./meteor/package` using `meteor add <dep name>`. You can also use `npm i -S <package name>` to get node modules. You would import node modules the same way you are used to. Meteor packages are automatically available.
 
 Let's get our dependencies installed.
 copy paste the following into the bottom
@@ -64,3 +64,42 @@ cunneen:accounts-admin-materializecss
 ```
 
 We get Scss, materialize-scss, useraccounts (for authentication), Roles (for authorization), browser-policy (for CORS), and an admin panel for account control.
+
+Delete the following lines from the packages file as well:
+
+```
+autopublish@1.0.7             # Publish all data to the clients (for prototyping)
+insecure@1.0.7                # Allow all DB writes from clients (for prototyping)
+```
+
+As a final step run `meteor npm install --save bcrypt`.
+
+####Create An Index Route and a Layout
+
+Lets create an Iron Router. In the root of your project, make a new folder called `lib`. In the lib folder, make a `router.js` and paste in the following:
+
+```javascript
+// In the configuration, we declare the layout, 404, loading,
+// navbar, and footer templates.
+Router.configure({
+  layoutTemplate: 'masterLayout',
+  loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
+  yieldTemplates: {
+    navbar: {to: 'navbar'},
+    footer: {to: 'footer'},
+  }
+});
+
+// In the map, we set our routes.
+Router.map(function () {
+  // Index Route
+  this.route('home', {
+    path: '/',
+    template: 'home',
+    layoutTemplate: 'masterLayout'
+  });
+});
+```
+
+After you've saved the router, goto `localhost:3000`. You should see "Couldn't find a template named "masterLayout" or "masterLayout". Are you sure you defined it?" in red. That's ok.
