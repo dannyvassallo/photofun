@@ -1,0 +1,4 @@
+@import "{poetic:materialize-scss}/sass/components/_color.scss";
+$primary-color: color("grey", "darken-4");
+@import "{poetic:materialize-scss}/sass/materialize.scss";
+@import "./stylesheets/_stickyfooter.scss";
