@@ -2,7 +2,7 @@
 
 The fastest built reddit clone you've ever seen homie.
 
-####What's in it?
+###What's in it?
 
 * Meteor
 * Iron Router
@@ -15,7 +15,7 @@ The fastest built reddit clone you've ever seen homie.
 * alanning:roles
 * cunneen:accounts-admin-materializecss
 
-####Getting Started
+###Getting Started
 
 First, we Install [meteor](https://www.meteor.com/install). Second, we start er' up.
 
@@ -35,11 +35,9 @@ To use robomongo, connect to port `3001`
 To use minimongo console, type `mongo` in the
 terminal while in the `myredditclone` dir.
 
-![Alt meteor](https://s3-us-west-2.amazonaws.com/meteoreddit/meteor1.png)
-
 Meteor will livereload EVERYTHING. Enjoy that.
 
-####Adding Dependencies Up Front
+###Adding Dependencies Up Front
 
 Meteor has it's own package system called [Atmosphere](https://atmospherejs.com/) that installs
 dependencies to `./meteor/package` using `meteor add <dep name>`. You can also use `npm i -S <package name>` to get node modules. You would import node modules the same way you are used to. Meteor packages are automatically available.
@@ -74,7 +72,7 @@ insecure@1.0.7                # Allow all DB writes from clients (for prototypin
 
 As a final step run `meteor npm install --save bcrypt`.
 
-####Create An Index Route and a Layout
+###Create An Index Route and a Layout
 
 Lets create an Iron Router. In the root of your project, make a new folder called `lib`. In the lib folder, make a `router.js` and paste in the following:
 
@@ -290,4 +288,4 @@ In `client/views/pages/` create a file called `home.html` and paste in the follo
 
 That takes care of our home page errors -- even if we have some broken routes. Don't worry. That's up next.
 
-####Not Found and Authentication Routes
+###Not Found and Authentication Routes
