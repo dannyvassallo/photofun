@@ -425,3 +425,7 @@ Create another file called `signup.html` in the same folder and drop the followi
 ```
 
 User authentication is literally finished. You can create a user, and it will sign you in. You should now see a "Log Out" link in the navbar. You can also click this to sign out.
+
+###Authorization
+
+We've also added a "materialized" admin account manager. Lets set that template up next.
