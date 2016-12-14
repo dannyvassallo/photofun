@@ -429,3 +429,324 @@ User authentication is literally finished. You can create a user, and it will si
 ###Authorization
 
 We've also added a "materialized" admin account manager. Lets set that template up next.
+
+Since we're loading a collection, we'll also need to setup our loader template.
+
+First off let's update our router to include our "user management" route.
+
+```javascript
+// In the map, we set our routes.
+Router.map(function () {
+  // Index Route
+  this.route('home', {
+    path: '/',
+    template: 'home',
+    layoutTemplate: 'masterLayout'
+  });
+  // User Mgmt Route
+  this.route('usermgmt', {
+    path: '/usermgmt',
+    template: 'userManagement',
+    layoutTemplate: 'masterLayout',
+    onBeforeAction: function() {
+      if (Meteor.loggingIn()) {
+          this.render(this.loadingTemplate);
+      } else if(!Roles.userIsInRole(Meteor.user(), ['admin'])) {
+          this.redirect('/');
+      }
+      this.next();
+    },
+    loadingTemplate: 'loading'
+  });
+  // Sign In Route
+  AccountsTemplates.configureRoute('signIn', {
+      name: 'signin',
+      path: '/sign-in',
+      template: 'signIn',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Up Route
+  AccountsTemplates.configureRoute('signUp', {
+      name: 'sign-up',
+      path: '/sign-up',
+      template: 'signUp',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Out Route
+  this.route('/sign-out', function(){
+      Meteor.logout(function(err) {
+          if (err) alert('There was a problem logging you out.');
+          Router.go("/");
+      });
+      Router.go("/");
+  });
+});
+```
+
+Visit `http://localhost:3000/usermgmt` in your browser. You should get kicked back to the index because of the Role protection in the routes `onBeforeAction`. The route is missing a template or two, but lets get in to see the error first.
+
+While logged in, paste the following into your console in chrome:
+
+```javascript
+Meteor.userId();
+```
+
+Put the ID somewhere for a moment. Meteor will likely refresh your console so save it in an empty document.
+
+In the root of your project, create a new file called `settings.json`. Put this in that file:
+
+```json
+{
+  "adminId": "<THE ID YOU JUST GOT FROM THE CHROME CONSOLE>"
+}
+```
+
+Go to the terminal, and stop the meteor server with `ctrl+c`.
+
+We're going to restart it with our settings file and take care of creating our first admin user -- Us.
+
+Use the following command to start meteor:
+
+`meteor run --settings settings.json`
+
+Now when we visit `localhost:3000/usermgmt` we should see an error:
+
+`Couldn't find a template named "userManagement" or "userManagement". Are you sure you defined it?`
+
+Congrats, you now have user roles. Onto managing them. Let's use the prebuilt template for role management. Create an html file in `client > views > pages` called `usermgmt.html`. Put the following in it:
+
+```html
+<template name="userManagement">
+  <main class="usermgmtbody">
+    <div class="container">
+      <div class="row white z-depth-1 usermgmt">
+        <div class="col s12 m10 offset-m1">
+          {{> accountsAdmin}}
+        </div>
+      </div>
+    </div>
+  </main>
+</template>
+```
+
+Now you should see the user management panel as an admin. Tight.
+
+Let's make a helper so we can show a link to this page in the navbar when an admin is present. Under `client > controllers` create a file called `navbar.js` that matches the following:
+
+```javascript
+Template.navbar.helpers({
+  // check if user is an admin
+  'isAdminUser': function() {
+    return Roles.userIsInRole(Meteor.user(), ['admin']);
+  }
+});
+
+```
+
+And change `client > layouts > partials > navbar.html` to match this:
+
+```html
+<template name="navbar">
+  <nav>
+    <div class="container">
+      <div class="row">
+        <div class="col s12">
+          <div class="nav-wrapper">
+            <a href="/" class="brand-logo">MeteoReddit</a>
+            <a href="#" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
+            <ul class="right hide-on-med-and-down">
+              {{#if isAdminUser}}
+                <li><a href="/usermgmt">User Management</a></li>
+              {{/if}}
+              {{#if currentUser}}
+                <li><a href="/sign-out">Sign Out</a></li>
+              {{else}}
+                <li><a href="/sign-in">Sign In</a></li>
+              {{/if}}
+            </ul>
+            <ul class="side-nav" id="mobile-nav">
+              {{#if currentUser}}
+                <li><a href="/sign-out">Sign Out</a></li>
+              {{else}}
+                <li><a href="/sign-in">Sign In</a></li>
+              {{/if}}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</template>
+```
+
+Sweet. We're done with user management. You can create any roles you want as the admin and assign them to any user.
+
+Since we reference it, let's create a loading template using the loader from materialize.
+
+Under `client > views > pages` create a file called `loading.html` and put the loader in it:
+
+```html
+<template name="loading">
+  <div class="loadingbody">
+    <div class="preloader-wrapper big active">
+      <div class="spinner-layer spinner-blue">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer spinner-red">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer spinner-yellow">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer spinner-green">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+Let's make a route to see the loader. Fix your router to match the following and visit `localhost:3000/loading` when you're finished:
+
+```javascript
+// In the configuration, we declare the layout, 404, loading,
+// navbar, and footer templates.
+Router.configure({
+  layoutTemplate: 'masterLayout',
+  loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
+  yieldTemplates: {
+    navbar: {to: 'navbar'},
+    footer: {to: 'footer'},
+  }
+});
+
+// In the map, we set our routes.
+Router.map(function () {
+  // Index Route
+  this.route('home', {
+    path: '/',
+    template: 'home',
+    layoutTemplate: 'masterLayout'
+  });
+  this.route('loading', {
+    path: 'loading',
+    template: 'loading',
+    layoutTemplate: 'masterLayout'
+  });
+  // User Mgmt Route
+  this.route('usermgmt', {
+    path: '/usermgmt',
+    template: 'userManagement',
+    layoutTemplate: 'masterLayout',
+    onBeforeAction: function() {
+      if (Meteor.loggingIn()) {
+          this.render(this.loadingTemplate);
+      } else if(!Roles.userIsInRole(Meteor.user(), ['admin'])) {
+          this.redirect('/');
+      }
+      this.next();
+    },
+    loadingTemplate: 'loading'
+  });
+  // Sign In Route
+  AccountsTemplates.configureRoute('signIn', {
+      name: 'signin',
+      path: '/sign-in',
+      template: 'signIn',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Up Route
+  AccountsTemplates.configureRoute('signUp', {
+      name: 'sign-up',
+      path: '/sign-up',
+      template: 'signUp',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Out Route
+  this.route('/sign-out', function(){
+      Meteor.logout(function(err) {
+          if (err) alert('There was a problem logging you out.');
+          Router.go("/");
+      });
+      Router.go("/");
+  });
+});
+```
+
+The loader looks a little screwy and our margins from the navbar are a bit funky. Let's write some sass to fix this.
+
+Change your `client > main.scss` to match the following:
+
+```css
+@import "{poetic:materialize-scss}/sass/components/_color.scss";
+$primary-color: color("grey", "darken-4");
+@import "{poetic:materialize-scss}/sass/materialize.scss";
+@import "./stylesheets/_stickyfooter.scss";
+@import "./stylesheets/_loading.scss";
+@import "./stylesheets/_navbar.scss";
+```
+
+Now create the two new files we want to import.
+
+In `client > stylesheets` create a file called `_loading.scss` with the following in it:
+
+```css
+main{
+  position: relative;
+}
+
+.loadingbody{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 0 auto;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  top: 0;
+  right: 0;
+  z-index: -1;
+}
+```
+
+In the same folder, make another file called `_navbar.scss` with the following in it:
+
+```css
+nav{
+  margin-bottom: 40px;
+}
+```
+
+We now have the entire foundation to build any authorized, authenticated, CRUD app with meteor. Congrats. Next, we'll be adding our own functionality, deploying the app, and compiling it for our phone.
