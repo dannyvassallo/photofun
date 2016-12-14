@@ -410,7 +410,7 @@ In `client > views > pages` let's create a file called `signin.html`. Put the fo
 
 Create another file called `signup.html` in the same folder and drop the following into it:
 
-```
+```html
 <template name="signUp">
   <main class="registerbody">
     <div class="container">
