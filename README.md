@@ -288,4 +288,144 @@ In `client/views/pages/` create a file called `home.html` and paste in the follo
 
 That takes care of our home page errors -- even if we have some broken routes. Don't worry. That's up next.
 
+###Remove boilerplate code
+
+To get rid of the rest of the boilerplate code, setup CORS for your mobile devices, and gear up for the first admin, change the following:
+
+Replace `client/main.js` with this
+```javascript
+import { Template } from 'meteor/templating';
+import { ReactiveVar } from 'meteor/reactive-var';
+
+import './main.html';
+```
+
+And replace `server/main.js` with this
+```javascript
+import { Meteor } from 'meteor/meteor';
+import { BrowserPolicy } from 'meteor/browser-policy-common';
+
+Meteor.startup(() => {
+  BrowserPolicy.content.allowOriginForAll('*');
+  // code to run on server at startup
+
+  // create admin from settings
+  if (Meteor.users.findOne(Meteor.settings.adminId)){
+    Roles.addUsersToRoles(Meteor.settings.adminId, ['admin']);
+  }
+}
+```
+
 ###Not Found and Authentication Routes
+
+If we click the sign in link, we see an error in our view:
+
+`Couldn't find a template named "notFound" or "notFound". Are you sure you defined it?`
+
+This comes from our router here:
+
+`notFoundTemplate: 'notFound',`
+
+We've defined a "Not Found" or 404 template but haven't created one yet. Let's do this now.
+
+Under `client > views > pages` create a file called `notfound.html` and put the following in it:
+
+```html
+<template name="notFound">
+  <main class="notfoundbody">
+    <div class="container">
+      <div class="row">
+        <div class="col s12">
+          <p>Page not found.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</template>
+```
+
+When visit the sign-in link now, we should see "Page not found." instead. Our app is now rendering a custom 404 page.
+
+Now we actually want to show a sign in page. We've already created the authentication methods and models by installing the account dependencies in the beginning. The specific version we've used already has materialize templates so they'll match our layout. Let's create the routes first, and then we'll do the templates.
+
+Fix your router so it looks like this:
+
+```javascript
+// In the map, we set our routes.
+Router.map(function () {
+  // Index Route
+  this.route('home', {
+    path: '/',
+    template: 'home',
+    layoutTemplate: 'masterLayout'
+  });
+  // Sign In Route
+  AccountsTemplates.configureRoute('signIn', {
+      name: 'signin',
+      path: '/sign-in',
+      template: 'signIn',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Up Route
+  AccountsTemplates.configureRoute('signUp', {
+      name: 'sign-up',
+      path: '/sign-up',
+      template: 'signUp',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Out Route
+  this.route('/sign-out', function(){
+      Meteor.logout(function(err) {
+          if (err) alert('There was a problem logging you out.');
+          Router.go("/");
+      });
+      Router.go("/");
+  });
+});
+```
+
+Now when we visit the browser we should no longer see our "Not Found" template but a new error:
+
+`Couldn't find a template named "signIn" or "signIn". Are you sure you defined it?`
+
+The templates are premade by the package I previously mentioned. So lets drop in a template for our sign in and sign up routes.
+
+In `client > views > pages` let's create a file called `signin.html`. Put the following inside it:
+
+```html
+<template name="signIn">
+  <main class="signinbody">
+    <div class="container">
+      <div class="row row-pad">
+        <div class="col s12 m6 offset-m3 l6 offset-l3 white z-depth-1 login">
+          {{> atForm state='signIn'}}
+        </div>
+      </div>
+    </div>
+  </main>
+</template>
+```
+
+Create another file called `signup.html` in the same folder and drop the following into it:
+
+```html
+<template name="signUp">
+  <main class="registerbody">
+    <div class="container">
+      <div class="row">
+        <div class="col s12 m6 offset-m3 l6 offset-l3 white z-depth-1 login">
+          {{> atForm state='signUp'}}
+        </div>
+      </div>
+    </div>
+  </main>
+</template>
+```
+
+User authentication is literally finished. You can create a user, and it will sign you in. You should now see a "Log Out" link in the navbar. You can also click this to sign out.
+
+###Authorization
+
+We've also added a "materialized" admin account manager. Lets set that template up next.
