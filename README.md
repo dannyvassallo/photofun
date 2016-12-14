@@ -15,7 +15,33 @@ The fastest built reddit clone you've ever seen homie.
 * alanning:roles
 * cunneen:accounts-admin-materializecss
 
+<a name="dir"></a>
+###Directory
+
+#####Lesson 1: A Boilerplate
+ * [Getting Started](#start)
+ * [Adding Dependencies Up Front](#deps)
+ * [Create An Index Route and a Layout](#index)
+ * [Remove Boilerplate Code](#boiler)
+ * [Not Found And Authentication Routes](#404)
+ * [Authorization](#auth)
+
+#####Lesson 2
+
+Coming Next
+
+<a name="start"></a>
 ###Getting Started
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
 
 First, we Install [meteor](https://www.meteor.com/install). Second, we start er' up.
 
@@ -37,7 +63,17 @@ terminal while in the `myredditclone` dir.
 
 Meteor will livereload EVERYTHING. Enjoy that.
 
+<a name="deps"></a>
 ###Adding Dependencies Up Front
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
 
 Meteor has it's own package system called [Atmosphere](https://atmospherejs.com/) that installs
 dependencies to `./meteor/package` using `meteor add <dep name>`. You can also use `npm i -S <package name>` to get node modules. You would import node modules the same way you are used to. Meteor packages are automatically available.
@@ -72,7 +108,17 @@ insecure@1.0.7                # Allow all DB writes from clients (for prototypin
 
 As a final step run `meteor npm install --save bcrypt`.
 
+<a name="index"></a>
 ###Create An Index Route and a Layout
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
 
 Lets create an Iron Router. In the root of your project, make a new folder called `lib`. In the lib folder, make a `router.js` and paste in the following:
 
@@ -288,7 +334,17 @@ In `client/views/pages/` create a file called `home.html` and paste in the follo
 
 That takes care of our home page errors -- even if we have some broken routes. Don't worry. That's up next.
 
+<a name="boiler"></a>
 ###Remove boilerplate code
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
 
 To get rid of the rest of the boilerplate code, setup CORS for your mobile devices, and gear up for the first admin, change the following:
 
@@ -316,7 +372,17 @@ Meteor.startup(() => {
 }
 ```
 
+<a name="404"></a>
 ###Not Found and Authentication Routes
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
 
 If we click the sign in link, we see an error in our view:
 
@@ -426,7 +492,17 @@ Create another file called `signup.html` in the same folder and drop the followi
 
 User authentication is literally finished. You can create a user, and it will sign you in. You should now see a "Log Out" link in the navbar. You can also click this to sign out.
 
+<a name="auth"></a>
 ###Authorization
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
 
 We've also added a "materialized" admin account manager. Lets set that template up next.
 
