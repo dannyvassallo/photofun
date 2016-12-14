@@ -30,6 +30,13 @@ The fastest built reddit clone you've ever seen homie.
 
 Coming Next
 
+#####Lesson 3: Deployment & App
+
+ * [Deployment](#horse)
+ * [Sync Settings With Heroku](#heroku)
+ * [Running on Android](#android)
+ * [Generating Icons and Splashes](#icons)
+
 <a name="start"></a>
 ###Getting Started
 
@@ -834,3 +841,102 @@ Checkout this first portion alone [here](https://github.com/dannyvassallo/meteor
 ------------------------
 
 ##BEGIN SECOND LESSON
+
+COMING SOON
+
+##END OF SECOND LESSON
+------------------------
+This section will cover whatever app this ends up being.
+
+------------------------
+
+##BEGIN THIRD LESSON
+
+<a name="horse"></a>
+###Deployment
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+Deploy using the [Meteor Horse Buildpack](https://github.com/AdmitHub/meteor-buildpack-horse) and Heroku
+
+
+* Set up your app to [deploy to heroku with git](https://devcenter.heroku.com/articles/git).
+*  Set this repository as the buildpack URL:
+```
+heroku buildpacks:set https://github.com/AdmitHub/meteor-buildpack-horse.git
+```
+* Add the MongoLab addon:
+```
+heroku addons:create mongolab
+```
+* Set the `ROOT_URL` environment variable. This is required for bundling and running the app.  Either define it explicitly, or enable the [Dyno Metadata](https://devcenter.heroku.com/articles/dyno-metadata) labs addon to default to `https://<appname>.herokuapp.com`.
+```
+heroku config:set ROOT_URL="https://<appname>.herokuapp.com" # or other URL
+```
+Once that's done, you can deploy your app using this build pack any time by pushing to heroku:
+```
+git push heroku master
+```
+
+<a name="heroku"></a>
+###Sync your local settings w/ Heroku
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+```
+heroku config:add METEOR_SETTINGS="$(cat settings.json)"
+```
+
+<a name="android"></a>
+###Running on android
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+
+In the shell with your device connected run:
+
+```
+MONGO_URL="mongodb://<username>:<password>@<mlab url>.mlab.com:<portnumber>/<dbname>" meteor run android-device --mobile-server=https://<appname>.herokuapp.com
+```
+
+<a name="icons"></a>
+###Generating Icons and splashes
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+
+Use meteor image asset generator [here](https://github.com/lpender/meteor-assets).
+
+Follow the instructions and copy the resulting resources folder over the one in this project.
