@@ -317,3 +317,31 @@ Meteor.startup(() => {
 ```
 
 ###Not Found and Authentication Routes
+
+If we click the sign in link, we see an error in our view:
+
+`Couldn't find a template named "notFound" or "notFound". Are you sure you defined it?`
+
+This comes from our router here:
+
+`notFoundTemplate: 'notFound',`
+
+We've defined a "Not Found" or 404 template but haven't created one yet. Let's do this now.
+
+Under `client > views > pages` create a file called `notfound.html` and put the following in it:
+
+```html
+<template name="notFound">
+  <main class="notfoundbody">
+    <div class="container">
+      <div class="row">
+        <div class="col s12">
+          <p>Page not found.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</template>
+```
+
+When visit the sign-in link now, we should see "Page not found." instead. Our app is now rendering a custom 404 page.
