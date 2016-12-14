@@ -750,3 +750,11 @@ nav{
 ```
 
 We now have the entire foundation to build any authorized, authenticated, CRUD app with meteor. Congrats. Next, we'll be adding our own functionality, deploying the app, and compiling it for our phone.
+
+##END OF FIRST LESSON
+------------------------
+Checkout this first portion alone [here](https://github.com/dannyvassallo/meteorlesson1). This next part will add features beyond the template setup in the first part, but feel free to clone down this link and use it to start a new project.
+
+------------------------
+
+##BEGIN SECOND LESSON
