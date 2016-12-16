@@ -884,6 +884,52 @@ Meteor.methods({
 });
 ```
 
+Next, we're going to add some new functionality to our app. For our posts, the content will be pulled from your camera. There is a meteor package to assist with this.
+
+Let's add that now using the command line. In your project directory, run this: `meteor add mdg:camera`.
+
+Now that we've added this dependency, you should see a new package added to your `./meteor/packages` file. like this:
+
+```
+fourseven:scss
+poetic:materialize-scss
+useraccounts:materialize
+useraccounts:core
+useraccounts:iron-routing
+accounts-password@1.3.1
+browser-policy@1.0.9
+browser-policy-common@1.0.11
+browser-policy-content@1.0.12
+browser-policy-framing@1.0.12
+alanning:roles
+cunneen:accounts-admin-materializecss
+mdg:camera
+```
+
+Cool. Lets write a new controller.
+
+In your `client/controllers/` folder, make a new file called `newpost.js`. Put the following inside of it:
+
+```javascript
+Template.newPost.events({
+  "submit #newPhoto": function (e) {
+    e.preventDefault();
+
+    MeteorCamera.getPicture(function (err, data) {
+      if (!err) {
+        Meteor.call("addPost", data);
+      }
+    });
+
+    return false;
+  }
+});
+```
+
+If you look in this code, you'll see that we are using the new [mdg:camera](https://atmospherejs.com/mdg/camera) package that we just added as well as calling the serverside method we've created. Dope. You can also see that we've written an event listener for a blaze template called `newPost` and we're listening for submit on a form with the id `#newPost`. Let's make this event's dream a reality and create a template for it to interact with.
+
+As a note before we move on -- let's discuss the new package. The way it works, is that it will pull a base 64 image from your camera, and store it in mongo. This means no s3. no credentials to store in a bucket, just quick easy image capture where `data` is the base64 image in the callback.
+
 ##END OF SECOND LESSON
 ------------------------
 This section will cover whatever app this ends up being.
