@@ -28,7 +28,7 @@ Not quite a reddit clone, but an app that takes photos and lets you vote on them
 
 #####Lesson 2
 
-Coming Next
+* [Making Posts](#posts)
 
 #####Lesson 3: Deployment & App
 
@@ -842,16 +842,47 @@ Checkout this first portion alone [here](https://github.com/dannyvassallo/meteor
 
 ##BEGIN SECOND LESSON
 
+<a name="posts"></a>
+###Making Posts
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+
 Let's make a reference to our first collection. Dat's right -- we're up in the shiz now.
 
 In the `lib` folder, create a file called `collections.js`. Inside put the following:
 
-```
+```javascript
 // Init Posts collection on mongodb
-var Posts = new Mongo.Collection('posts');
+Posts = new Mongo.Collection('posts');
 ```
 
 Now we can insert a post into the Posts collection -- kind of. There are a few more things to take care of first.
+
+We're going to create some methods. Methods are a way for us to write calls to mongo that we can invoke within our controllers. I like to think of it as an additional controller layer.
+
+For the first time we're going to create files in our server folder. First, let's make one called `postmethods.js` and put the following in it:
+
+```javascript
+Meteor.methods({
+  createPost: function (data) {
+    Items.insert({
+      image: data,
+      user: {
+        _id: Meteor.user()._id,
+      }
+    });
+  }
+});
+```
 
 ##END OF SECOND LESSON
 ------------------------
