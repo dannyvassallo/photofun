@@ -1,6 +1,6 @@
 #MeteoReddit
 
-The fastest built reddit clone you've ever seen homie.
+Not quite a reddit clone, but an app that takes photos and lets you vote on them like reddit does.
 
 ###What's in it?
 
@@ -842,7 +842,16 @@ Checkout this first portion alone [here](https://github.com/dannyvassallo/meteor
 
 ##BEGIN SECOND LESSON
 
-COMING SOON
+Let's make a reference to our first collection. Dat's right -- we're up in the shiz now.
+
+In the `lib` folder, create a file called `collections.js`. Inside put the following:
+
+```
+// Init Posts collection on mongodb
+var Posts = new Mongo.Collection('posts');
+```
+
+Now we can insert a post into the Posts collection -- kind of. There are a few more things to take care of first.
 
 ##END OF SECOND LESSON
 ------------------------
