@@ -49,6 +49,7 @@ Not quite a reddit clone, but an app that takes photos and lets you vote on them
 * [Pub / Sub and Rendering Posts](#pubsub)
 * [Deleting Posts](#delete)
 * [Voting on Posts](#votes)
+* [BugFix: Navbar](#bugfix)
 
 #####Lesson 3: Deployment & App
 
@@ -1652,6 +1653,36 @@ Template.home.helpers({
 Now we can vote an submitted posts and they will sort by vote!
 
 Congrats! The app should be firing on all cylinders locally! Follow the next part of the lesson to deploy!
+
+<a name="bugfix"></a>
+###Bugfix: Navbar
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+Update `client/controllers/navbar.js` to this to close the sidebar on mobile when a link is clicked.
+
+```javascript
+Template.navbar.helpers({
+  // check if user is an admin
+  'isAdminUser': function() {
+    return Roles.userIsInRole(Meteor.user(), ['admin']);
+  }
+});
+
+Template.navbar.events({    
+    "click ul#mobile-nav.side-nav li a": function(event){
+      $(".button-collapse").sideNav("hide");
+    }
+});
+```
 
 ##END OF SECOND LESSON
 ------------------------
