@@ -2,6 +2,10 @@
 
 Not quite a reddit clone, but an app that takes photos and lets you vote on them like reddit does.
 
+####Native Android Demo:
+
+[![android video](https://s3-us-west-2.amazonaws.com/photofunmeteor/screen.jpg)](https://drive.google.com/file/d/0BxBubv5zB-EqalRPUnRiMy1lX0E/preview)
+
 ###What's in it?
 
 * Meteor

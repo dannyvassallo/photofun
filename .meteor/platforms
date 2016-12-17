@@ -1,14 +1,3 @@
-server
+android
 browser
-fourseven:scss
-poetic:materialize-scss
-useraccounts:materialize
-useraccounts:core
-useraccounts:iron-routing
-accounts-password@1.3.1
-browser-policy@1.0.9
-browser-policy-common@1.0.11
-browser-policy-content@1.0.12
-browser-policy-framing@1.0.12
-alanning:roles
-cunneen:accounts-admin-materializecss
+server
