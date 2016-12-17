@@ -8,7 +8,9 @@
         <p>Posted by {{this.user.email}} {{moCalendar this.createdAt}}</p>
       </div>
       <div class="card-action">
-        <a href="#">This is a link</a>
+        {{#if isAdminOrCreator this}}
+          <div class="btn red delete-post" data-id="{{this._id}}"><i class="material-icons">delete</i></div>
+        {{/if}}
       </div>
     </div>
   </div>

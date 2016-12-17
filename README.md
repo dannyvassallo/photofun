@@ -26,10 +26,12 @@ Not quite a reddit clone, but an app that takes photos and lets you vote on them
  * [Not Found And Authentication Routes](#404)
  * [Authorization](#auth)
 
-#####Lesson 2
+#####Lesson 2: Photo Voting
 
 * [Making Posts](#posts)
 * [Styling Camera Package](#camera)
+* [Pub / Sub and Rendering Posts](#pubsub)
+* [Deleting Posts](#delete)
 
 #####Lesson 3: Deployment & App
 
@@ -1009,6 +1011,15 @@ Change it's content to match this:
 </template>
 ```
 
+Create a new controller for it's navbar in `client/controllers` called `homepageLayout.js`.
+Put the following in it:
+
+```javascript
+Template.homepageLayout.rendered = function () {
+  $(".button-collapse").sideNav();
+};
+```
+
 Update the router to match the following so the homepage view can get the new template:
 
 ```javascript
@@ -1287,7 +1298,7 @@ Update your `home.html` file in `client/views/pages/` to match the following:
 </template>
 ```
 
-if you look at your home route now and take some pictures, you'll see that we're available
+if you look at your home route now and take some pictures, you'll see that we're able to
 simultaneously populate and render the collection. super tight.
 
 Let's make this not look stupid now and start rendering some pictures.
@@ -1359,12 +1370,133 @@ And update `client/views/pages/home.html` to look like this:
 
 Sweet -- looking better.
 
+<a name="delete"></a>
+###Deleting Posts
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+
 Now let's add the ability to delete a photo as an admin OR the creator.
 
 In our `server/postmethods.js`, let's add a new method. Change it to look like below:
 
 ```javascript
+Meteor.methods({
+  addPost: function (data) {
+    Posts.insert({
+      image: data,
+      createdAt: new Date().toLocaleString(),
+      user: {
+        _id: Meteor.user()._id,
+        email: Meteor.user().emails[0].address
+      }
+    });
+  },
+  deletePost: function(postId){
+    var post = Posts.findOne({_id: postId }),
+    postUserId = post.user._id;
+    currentUserId = Meteor.userId();
+    if(postUserId === currentUserId) {
+      console.log("User deleted post.")
+      Posts.remove({_id: postId});
+    } else if(Roles.userIsInRole(Meteor.user(), ['admin'])){
+      console.log("Admin deleted post.")
+      Posts.remove({_id: postId});
+    } else {
+      console.log("Someone's trying to delete posts and shouldn't be.")
+    }
+  }
+});
+```
 
+Then, let's write an event for our deletion method in our posts partial. In `client/controllers/` create a file called
+`postPartial.js` and put the following in it:
+
+```javascript
+Template.postPartial.events({
+  "click .delete-post": function () {
+    var postId = event.target.dataset.id
+    Meteor.call('deletePost', postId);
+  }
+});
+```
+
+Now we just need to make it so our user doesnt click on the icon with a little css magic. Update the main.scss with the following line:
+
+```css
+@import "./stylesheets/_posts.scss";
+```
+
+and create a file called `_posts.scss` in `client/stylesheets/` with the following in it:
+
+```css
+.delete-post{
+  i{
+    pointer-events: none;
+  }
+}
+```
+
+Now when we target the button, we for sure get the id for the call.
+
+We want to update our template to add a delete button but we need a helper to
+only show it to the admin and the creator. Let's do that now.
+
+Update `client/controllers/postPartial.js` to container the following:
+
+```javascript
+Template.postPartial.events({
+  "click .delete-post": function () {
+    var postId = event.target.dataset.id
+    Meteor.call('deletePost', postId);
+  }
+});
+
+Template.postPartial.helpers({
+  'isAdminOrCreator': function(post) {
+    postUserId = post.user._id;
+    currentUserId = Meteor.userId();
+    if(postUserId === currentUserId) {
+      return true
+    } else if(Roles.userIsInRole(Meteor.user(), ['admin'])){
+      return true
+    } else {
+      return false
+    }
+  }
+});
+```
+
+And when we update our view to use the helper we get fully authorized deletion.
+
+Update `client/views/postPartial.html` to look like this:
+
+```html
+<template name="postPartial">
+  <div class="col s12 m6 l4">
+    <div class="card">
+      <div class="card-image">
+        <img src="{{this.image}}">
+      </div>
+      <div class="card-content">
+        <p>Posted by {{this.user.email}} {{moCalendar this.createdAt}}</p>
+      </div>
+      <div class="card-action">
+        {{#if isAdminOrCreator this}}
+          <div class="btn red delete-post" data-id="{{this._id}}"><i class="material-icons">delete</i></div>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+</template>
 ```
 
 ##END OF SECOND LESSON
