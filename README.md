@@ -1637,6 +1637,20 @@ Now we can vote an submitted posts and they will sort by vote!
 
 Congrats! The app should be firing on all cylinders locally! Follow the next part of the lesson to deploy!
 
+QUICK PATCH:
+
+Theres an issue with iron router middleware so you'll need to update your package dependencies and add this to the bottom of `.meteor/packages`:
+
+```shell
+iron:middleware-stack@1.1.0
+```
+
+Save it add commit push and deploy to heroku.
+
+EXTRA NOTE:
+
+You'll need to give the site camera permissions when you deploy for it to work.
+
 ##END OF SECOND LESSON
 ------------------------
 This section will cover whatever app this ends up being.
