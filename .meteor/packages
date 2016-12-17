@@ -32,3 +32,4 @@ alanning:roles
 cunneen:accounts-admin-materializecss
 mdg:camera
 lbee:moment-helpers
+iron:middleware-stack@1.1.0
