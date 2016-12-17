@@ -1,0 +1,15 @@
+<template name="postPartial">
+  <div class="col s12 m6 l4">
+    <div class="card">
+      <div class="card-image">
+        <img src="{{this.image}}">
+      </div>
+      <div class="card-content">
+        <p>Posted by {{this.user.email}} {{moCalendar this.createdAt}}</p>
+      </div>
+      <div class="card-action">
+        <a href="#">This is a link</a>
+      </div>
+    </div>
+  </div>
+</template>

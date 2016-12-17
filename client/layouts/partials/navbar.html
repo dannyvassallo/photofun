@@ -17,6 +17,9 @@
               {{/if}}
             </ul>
             <ul class="side-nav" id="mobile-nav">
+              {{#if isAdminUser}}
+                <li><a href="/usermgmt">User Management</a></li>
+              {{/if}}
               {{#if currentUser}}
                 <li><a href="/sign-out">Sign Out</a></li>
               {{else}}

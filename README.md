@@ -651,6 +651,9 @@ And change `client > layouts > partials > navbar.html` to match this:
               {{/if}}
             </ul>
             <ul class="side-nav" id="mobile-nav">
+              {{#if isAdminUser}}
+                <li><a href="/usermgmt">User Management</a></li>
+              {{/if}}
               {{#if currentUser}}
                 <li><a href="/sign-out">Sign Out</a></li>
               {{else}}
@@ -874,11 +877,13 @@ For the first time we're going to create files in our server folder. First, let'
 
 ```javascript
 Meteor.methods({
-  createPost: function (data) {
+  addPost: function (data) {
     Posts.insert({
       image: data,
+      createdAt: new Date().toLocaleString(),
       user: {
         _id: Meteor.user()._id,
+        email: Meteor.user().emails[0].address
       }
     });
   }
@@ -1100,7 +1105,7 @@ Next we'll need to create that file. In your `client/stylesheets/` folder, make 
 .camera-popup{
   width: 100% !important;
   max-width: 100% !important;
-  position: absolute;
+  position: fixed;
   top: 0;
   bottom: 0;
   left: 0;
@@ -1130,6 +1135,237 @@ Next we'll need to create that file. In your `client/stylesheets/` folder, make 
 ```
 
 Here, we take advantage of sass and extend some materialize classes to the stuff baked into the camera app. A little dirty, but it works great.
+
+<a name="pubsub"></a>
+###Pub/Sub and Rendering Posts
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+We need to publish the posts collection from our server to actually do anything with it. Lets do that now.
+
+In your `server/main.js` file, change it to look like the following:
+
+```javascript
+import { Meteor } from 'meteor/meteor';
+import { BrowserPolicy } from 'meteor/browser-policy-common';
+
+Meteor.startup(() => {
+  BrowserPolicy.content.allowOriginForAll('*');
+  BrowserPolicy.content.allowImageOrigin("blob:");
+  var constructedCsp = BrowserPolicy.content._constructCsp();
+  BrowserPolicy.content.setPolicy(constructedCsp +" media-src blob:;");
+  // code to run on server at startup
+
+  // create admin from settings
+  if (Meteor.users.findOne(Meteor.settings.adminId)){
+    Roles.addUsersToRoles(Meteor.settings.adminId, ['admin']);
+  }
+});
+
+Meteor.publish("posts", function () {
+  return Posts.find();
+});
+```
+
+We'll update our homepage to subscribe to this new publication and change the router to
+show the loader while it's querying the posts collection.
+
+Upate your router to the following:
+
+```javascript
+// In the configuration, we declare the layout, 404, loading,
+// navbar, and footer templates.
+Router.configure({
+  layoutTemplate: 'masterLayout',
+  loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
+  yieldTemplates: {
+    navbar: {to: 'navbar'},
+    footer: {to: 'footer'},
+  }
+});
+
+// In the map, we set our routes.
+Router.map(function () {
+  // Index Route
+  this.route('home', {
+    path: '/',
+    template: 'home',
+    layoutTemplate: 'homepageLayout',
+    waitOn: function(){
+      var collections = [
+        Meteor.subscribe('posts')
+      ];
+      return collections;
+    }
+  });
+  this.route('loading', {
+    path: 'loading',
+    template: 'loading',
+    layoutTemplate: 'masterLayout'
+  });
+  // User Mgmt Route
+  this.route('usermgmt', {
+    path: '/usermgmt',
+    template: 'userManagement',
+    layoutTemplate: 'masterLayout',
+    onBeforeAction: function() {
+      if (Meteor.loggingIn()) {
+          this.render(this.loadingTemplate);
+      } else if(!Roles.userIsInRole(Meteor.user(), ['admin'])) {
+          this.redirect('/');
+      }
+      this.next();
+    },
+    loadingTemplate: 'loading'
+  });
+  // Sign In Route
+  AccountsTemplates.configureRoute('signIn', {
+      name: 'signin',
+      path: '/sign-in',
+      template: 'signIn',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Up Route
+  AccountsTemplates.configureRoute('signUp', {
+      name: 'sign-up',
+      path: '/sign-up',
+      template: 'signUp',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Out Route
+  this.route('/sign-out', function(){
+      Meteor.logout(function(err) {
+          if (err) alert('There was a problem logging you out.');
+          Router.go("/");
+      });
+      Router.go("/");
+  });
+});
+```
+
+Now our homepage will show a loader when the posts are loading. Dope dope dope.
+
+Let's actually do something with the posts that we're creating now. Make a new file under
+`client/controllers` called `home.js` and put the following in it:
+
+```javascript
+Template.home.helpers({
+  // check if user is an admin
+  'post': function() {
+    return Posts.find();
+  }
+});
+```
+
+Update your `home.html` file in `client/views/pages/` to match the following:
+
+```html
+<template name="home">
+  <div class="container">
+    <div class="row">
+      <div class="col s12">
+        <h1>Home</h1>
+        <p>This is the index path.</p>
+      </div>
+    </div>
+  </div>
+  {{#each post}}
+    <p>{{this.image}}</p>
+  {{/each}}
+  {{> newPost}}
+</template>
+```
+
+if you look at your home route now and take some pictures, you'll see that we're available
+simultaneously populate and render the collection. super tight.
+
+Let's make this not look stupid now and start rendering some pictures.
+
+Create a new file in `client/views/partials/` called `postPartial.html` with the following in it:
+
+```html
+<template name="postPartial">
+  <div class="col s12 m6 l4">
+    <div class="card">
+      <div class="card-image">
+        <img src="{{this.image}}">
+      </div>
+      <div class="card-content">
+        <p>Posted by {{this.user.email}} {{this.createdAt}}</p>
+      </div>
+      <div class="card-action">
+        <a href="#">This is a link</a>
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+Update your `client/views/pages/home.html` to match the following:
+
+```html
+<template name="home">
+  <div class="container">
+    <div class="row">
+      {{#each post}}
+        {{> postPartial}}
+      {{/each}}
+    </div>
+  </div>
+  {{> newPost}}
+</template>
+```
+
+And boom! Pictures galore! Woop woop!
+
+You'll notice the timestamp in the post is a locale string -- lets use moment to fix that.
+
+run this in your terminal:
+
+```
+meteor add lbee:moment-helpers
+```
+
+And update `client/views/pages/home.html` to look like this:
+
+```html
+<template name="postPartial">
+  <div class="col s12 m6 l4">
+    <div class="card">
+      <div class="card-image">
+        <img src="{{this.image}}">
+      </div>
+      <div class="card-content">
+        <p>Posted by {{this.user.email}} {{moCalendar this.createdAt}}</p>
+      </div>
+      <div class="card-action">
+        <a href="#">This is a link</a>
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+Sweet -- looking better.
+
+Now let's add the ability to delete a photo as an admin OR the creator.
+
+In our `server/postmethods.js`, let's add a new method. Change it to look like below:
+
+```javascript
+
+```
 
 ##END OF SECOND LESSON
 ------------------------
@@ -1168,7 +1404,7 @@ heroku addons:create mongolab
 ```
 heroku config:set ROOT_URL="https://<appname>.herokuapp.com" # or other URL
 ```
-Once that's done, you can deploy your app using this build pack any time by pushing to heroku:
+Once thats done, you can deploy your app using this build pack any time by pushing to heroku:
 ```
 git push heroku master
 ```
