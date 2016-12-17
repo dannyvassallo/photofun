@@ -2,6 +2,17 @@
 
 Not quite a reddit clone, but an app that takes photos and lets you vote on them like reddit does.
 
+This is a full on walk through to create a fully functional Meteor/Blaze/Iron Router app from beginning to deploy.
+
+It is split up into 3 sections or lessons. The first is the boilerplate, the second is the PhotoFun app feature set, the third is for deploying and app building.
+
+You can use the first and last without the middle to make any app you want.
+
+Happy coding!
+
+####Web App Demo:
+[![web app](https://s3-us-west-2.amazonaws.com/photofunmeteor/webapp.jpg)](https://photofunmeteor.herokuapp.com)
+
 ####Native Android Demo:
 
 [![android video](https://s3-us-west-2.amazonaws.com/photofunmeteor/screen.jpg)](https://drive.google.com/file/d/0BxBubv5zB-EqalRPUnRiMy1lX0E/preview)
@@ -50,7 +61,7 @@ Not quite a reddit clone, but an app that takes photos and lets you vote on them
 * [Deleting Posts](#delete)
 * [Voting on Posts](#votes)
 * [BugFix: Navbar](#bugfix)
-* [UI Tweaks WIP](#uitweaks)
+* [UI Tweaks WIP](#uitweaks) <- This is a WIP skip it.
 
 #####Lesson 3: Deployment & App
 
@@ -1905,6 +1916,7 @@ heroku config:add METEOR_SETTINGS="$(cat settings.json)"
 `-----------------------------------------------------`
 
 ` `
+
 Before anything visit this link:
 https://www.meteor.com/tutorials/blaze/running-on-mobile
 
