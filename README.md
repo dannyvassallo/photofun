@@ -1502,7 +1502,7 @@ Update `client/views/postPartial.html` to look like this:
 </template>
 ```
 
-<a name="voting"></a>
+<a name="votes"></a>
 ###Voting On Posts
 
 ` `
