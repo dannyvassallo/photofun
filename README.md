@@ -1368,7 +1368,7 @@ run this in your terminal:
 meteor add lbee:moment-helpers
 ```
 
-And update `client/views/pages/home.html` to look like this:
+And update `client/views/pages/postPartial.html` to look like this:
 
 ```html
 <template name="postPartial">
