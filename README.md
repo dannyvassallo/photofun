@@ -29,6 +29,7 @@ Not quite a reddit clone, but an app that takes photos and lets you vote on them
 #####Lesson 2
 
 * [Making Posts](#posts)
+* [Styling Camera Package](#camera)
 
 #####Lesson 3: Deployment & App
 
@@ -874,7 +875,7 @@ For the first time we're going to create files in our server folder. First, let'
 ```javascript
 Meteor.methods({
   createPost: function (data) {
-    Items.insert({
+    Posts.insert({
       image: data,
       user: {
         _id: Meteor.user()._id,
@@ -912,7 +913,7 @@ In your `client/controllers/` folder, make a new file called `newpost.js`. Put t
 
 ```javascript
 Template.newPost.events({
-  "submit #newPhoto": function (e) {
+  "click #newPost": function (e) {
     e.preventDefault();
 
     MeteorCamera.getPicture(function (err, data) {
@@ -926,9 +927,168 @@ Template.newPost.events({
 });
 ```
 
-If you look in this code, you'll see that we are using the new [mdg:camera](https://atmospherejs.com/mdg/camera) package that we just added as well as calling the serverside method we've created. Dope. You can also see that we've written an event listener for a blaze template called `newPost` and we're listening for submit on a form with the id `#newPost`. Let's make this event's dream a reality and create a template for it to interact with.
+If you look in this code, you'll see that we are using the new [mdg:camera](https://atmospherejs.com/mdg/camera) package that we just added as well as calling the serverside method we've created. Dope. You can also see that we've written an event listener for a blaze template called `newPost` and we're listening for click on an element with the id `#newPost`. Let's make this event's dream a reality and create a template for it to interact with.
 
 As a note before we move on -- let's discuss the new package. The way it works, is that it will pull a base 64 image from your camera, and store it in mongo. This means no s3. no credentials to store in a bucket, just quick easy image capture where `data` is the base64 image in the callback.
+
+Now, lets create that template. We're going to do this like a react component and render the partial wherever we feel like.
+
+In `client/views/` make a new folder called `partials`.
+
+In the new `partials` folder, create a file called `newPost.html`. In that file, put the following:
+
+```html
+<template name="newPost">
+  {{#if currentUser}}
+  <div id="newPost" class="fixed-action-btn">
+    <a class="btn-floating btn-large red">
+      <i class="large material-icons">add</i>
+    </a>
+  </div>
+  {{/if}}
+</template>
+```
+
+Before this will work at all, we need to update our browser policy to allow us to take photos with our app. update `server/main.js` with the following:
+
+```
+import { Meteor } from 'meteor/meteor';
+import { BrowserPolicy } from 'meteor/browser-policy-common';
+
+Meteor.startup(() => {
+  BrowserPolicy.content.allowOriginForAll('*');
+  BrowserPolicy.content.allowImageOrigin("blob:");
+  var constructedCsp = BrowserPolicy.content._constructCsp();
+  BrowserPolicy.content.setPolicy(constructedCsp +" media-src blob:;");
+  // code to run on server at startup
+
+  // create admin from settings
+  if (Meteor.users.findOne(Meteor.settings.adminId)){
+    Roles.addUsersToRoles(Meteor.settings.adminId, ['admin']);
+  }
+});
+```
+
+Now let's render that in the homepage.
+
+Change the homepage's content to match this:
+
+```html
+<template name="home">
+  <div class="container">
+    <div class="row">
+      <div class="col s12">
+        <h1>Home</h1>
+        <p>This is the index path.</p>
+      </div>
+    </div>
+  </div>
+  {{> newPost}}
+</template>
+```
+
+Now we get a fixed button that opens our new camera package.
+
+The button overlaps the footer so let's create a new layout template for our homepage that doesn't have one.
+
+Duplicate the `masterLayout.html` in the `client/views/layouts/` folder and name it `homepageLayout.html`.
+
+Change it's content to match this:
+
+```html
+<template name="homepageLayout">
+  {{> yield region='navbar'}}
+    <main>
+      {{> yield}}
+    </main>
+</template>
+```
+
+Update the router to match the following so the hompage view can get the new template:
+
+```javascript
+// In the configuration, we declare the layout, 404, loading,
+// navbar, and footer templates.
+Router.configure({
+  layoutTemplate: 'masterLayout',
+  loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
+  yieldTemplates: {
+    navbar: {to: 'navbar'},
+    footer: {to: 'footer'},
+  }
+});
+
+// In the map, we set our routes.
+Router.map(function () {
+  // Index Route
+  this.route('home', {
+    path: '/',
+    template: 'home',
+    layoutTemplate: 'homepageLayout'
+  });
+  this.route('loading', {
+    path: 'loading',
+    template: 'loading',
+    layoutTemplate: 'masterLayout'
+  });
+  // User Mgmt Route
+  this.route('usermgmt', {
+    path: '/usermgmt',
+    template: 'userManagement',
+    layoutTemplate: 'masterLayout',
+    onBeforeAction: function() {
+      if (Meteor.loggingIn()) {
+          this.render(this.loadingTemplate);
+      } else if(!Roles.userIsInRole(Meteor.user(), ['admin'])) {
+          this.redirect('/');
+      }
+      this.next();
+    },
+    loadingTemplate: 'loading'
+  });
+  // Sign In Route
+  AccountsTemplates.configureRoute('signIn', {
+      name: 'signin',
+      path: '/sign-in',
+      template: 'signIn',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Up Route
+  AccountsTemplates.configureRoute('signUp', {
+      name: 'sign-up',
+      path: '/sign-up',
+      template: 'signUp',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Out Route
+  this.route('/sign-out', function(){
+      Meteor.logout(function(err) {
+          if (err) alert('There was a problem logging you out.');
+          Router.go("/");
+      });
+      Router.go("/");
+  });
+});
+```
+
+If you click plus button now, you can grab pictures from your camera on any device. Pretty sweet. But the UI looks like crap and you'll notce that if you open it. Let's extend some sass classes to the UI and make it more materialized!
+
+<a name="camera"></a>
+###Styling Camera Package
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
 
 ##END OF SECOND LESSON
 ------------------------

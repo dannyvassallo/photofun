@@ -3,6 +3,9 @@ import { BrowserPolicy } from 'meteor/browser-policy-common';
 
 Meteor.startup(() => {
   BrowserPolicy.content.allowOriginForAll('*');
+  BrowserPolicy.content.allowImageOrigin("blob:");
+  var constructedCsp = BrowserPolicy.content._constructCsp();
+  BrowserPolicy.content.setPolicy(constructedCsp +" media-src blob:;");
   // code to run on server at startup
 
   // create admin from settings

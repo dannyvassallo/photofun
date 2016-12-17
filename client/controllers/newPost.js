@@ -1,5 +1,5 @@
 Template.newPost.events({
-  "submit #newPhoto": function (e) {
+  "click #newPost": function (e) {
     e.preventDefault();
 
     MeteorCamera.getPicture(function (err, data) {
