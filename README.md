@@ -1727,7 +1727,12 @@ heroku config:add METEOR_SETTINGS="$(cat settings.json)"
 `-----------------------------------------------------`
 
 ` `
+Before anything visit this link:
+https://www.meteor.com/tutorials/blaze/running-on-mobile
 
+This will get you started setting up your mobile sdks.
+
+Every phone / machine is different so you may run into certain issues. on the iOS simulator you may have issues with native camera support. Try it on a device or on android emulation.
 
 In the shell with your device connected run:
 NOTE: Get the mongo url from your provisioned addon through herokus CLI or dashboard
