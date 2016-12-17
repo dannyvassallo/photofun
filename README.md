@@ -8,16 +8,28 @@ Not quite a reddit clone, but an app that takes photos and lets you vote on them
 
 ###What's in it?
 
-* Meteor
-* Iron Router
-* Blaze
-* AccountsUI
-* scss
-* materialize-scss
-* useraccounts Materialize
-* browser-policy
-* alanning:roles
-* cunneen:accounts-admin-materializecss
+* [Meteor](https://docs.meteor.com/)
+* [Iron Router](http://iron-meteor.github.io/iron-router/)
+* [Blaze](http://blazejs.org/guide/introduction.html)
+* [materialize](http://materializecss.com/)
+* [scss](http://sass-lang.com/guide)
+* [fourseven:scss](https://github.com/fourseven/meteor-scss)
+* [materialize-scss](https://github.com/poetic/meteor-materialize-scss)
+* [useraccounts](https://github.com/meteor-useraccounts/core/)
+* [useraccounts:materialize](https://github.com/meteor-useraccounts/materialize/)
+* [useraccounts:iron-routing](https://github.com/meteor-useraccounts/iron-routing)
+* [alanning:roles](https://github.com/alanning/meteor-roles)
+* [cunneen:accounts-admin-materializecss](https://github.com/AppWorkshop/meteor-accounts-admin-materializecss)
+* [accounts-password](https://atmospherejs.com/meteor/accounts-password)
+* [browser-policy](https://atmospherejs.com/meteor/browser-policy)
+* [browser-policy-common](https://atmospherejs.com/meteor/browser-policy-common)
+* [browser-policy-content](https://atmospherejs.com/meteor/browser-policy-content)
+* [browser-policy-framing](https://atmospherejs.com/meteor/browser-policy-framing)
+* [mdg:camera](https://github.com/meteor/mobile-packages/tree/master/packages/mdg:camera)
+* [lbee:moment-helpers](https://atmospherejs.com/lbee/moment-helpers)
+* [iron:middleware-stack](https://atmospherejs.com/iron/middleware-stack)
+* [bcrypt](https://www.npmjs.com/package/bcrypt)
+
 
 <a name="dir"></a>
 ###Directory
