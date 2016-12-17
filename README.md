@@ -32,6 +32,7 @@ Not quite a reddit clone, but an app that takes photos and lets you vote on them
 * [Styling Camera Package](#camera)
 * [Pub / Sub and Rendering Posts](#pubsub)
 * [Deleting Posts](#delete)
+* [Voting on Posts](#votes)
 
 #####Lesson 3: Deployment & App
 
@@ -883,6 +884,7 @@ Meteor.methods({
     Posts.insert({
       image: data,
       createdAt: new Date().toLocaleString(),
+      likes: 0,
       user: {
         _id: Meteor.user()._id,
         email: Meteor.user().emails[0].address
@@ -1394,6 +1396,7 @@ Meteor.methods({
     Posts.insert({
       image: data,
       createdAt: new Date().toLocaleString(),
+      likes: 0,
       user: {
         _id: Meteor.user()._id,
         email: Meteor.user().emails[0].address
@@ -1499,6 +1502,141 @@ Update `client/views/postPartial.html` to look like this:
 </template>
 ```
 
+<a name="voting"></a>
+###Voting On Posts
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+So now we want our users to be able to vote on posts in the form of a "like".
+Let's make a button available to a signed in user that will "upvote" or "like" our posts.
+
+Update your `client/views/partials/postPartial.html` to look like the following:
+
+```html
+<template name="postPartial">
+  <div class="col s12 m6 l4">
+    <div class="card">
+      <div class="card-image">
+        <img src="{{this.image}}">
+      </div>
+      <div class="card-content">
+        <p>Posted by {{this.user.email}} {{moCalendar this.createdAt}}</p>
+      </div>
+      <div class="card-action">
+        {{#if isAdminOrCreator this}}
+          <div class="btn red delete-post" data-id="{{this._id}}"><i class="material-icons">delete</i></div>
+        {{/if}}
+        {{#if currentUser}}
+          <div class="btn like-post" data-id="{{this._id}}"><i class="material-icons">thumb_up</i></div>
+        {{/if}}
+        <p>{{this.likes}} Likes</p>
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+Let's write a method to increment the votes on posts. Update `server/postmethods.js` to look like the following:
+
+```javascript
+Meteor.methods({
+  addPost: function (data) {
+    Posts.insert({
+      image: data,
+      createdAt: new Date().toLocaleString(),
+      likes: 0,
+      user: {
+        _id: Meteor.user()._id,
+        email: Meteor.user().emails[0].address
+      }
+    });
+  },
+  likePost: function(postId){
+    userSignedIn = Meteor.user() || false;
+    if(userSignedIn){
+      Posts.update({_id: postId}, {$inc: {likes: 1} });
+    }
+  },
+  deletePost: function(postId){
+    var post = Posts.findOne({_id: postId }),
+    postUserId = post.user._id;
+    currentUserId = Meteor.userId();
+    if(postUserId === currentUserId) {
+      console.log("User deleted post.")
+      Posts.remove({_id: postId});
+    } else if(Roles.userIsInRole(Meteor.user(), ['admin'])){
+      console.log("Admin deleted post.")
+      Posts.remove({_id: postId});
+    } else {
+      console.log("Someone's trying to delete posts and shouldn't be.")
+    }
+  }
+});
+```
+
+And let's update `client/controllers/postPartial.js` to trigger an increment on the like count:
+
+```javascript
+Template.postPartial.events({
+  "click .delete-post": function () {
+    var postId = event.target.dataset.id
+    Meteor.call('deletePost', postId);
+  },
+  "click .like-post": function () {
+    var postId = event.target.dataset.id
+    Meteor.call('likePost', postId);
+  }
+});
+
+Template.postPartial.helpers({
+  'isAdminOrCreator': function(post) {
+    postUserId = post.user._id;
+    currentUserId = Meteor.userId();
+    if(postUserId === currentUserId) {
+      return true
+    } else if(Roles.userIsInRole(Meteor.user(), ['admin'])){
+      return true
+    } else {
+      return false
+    }
+  }
+});
+```
+
+We need to do the icon fix for our button again so lets update `client/stylesheets/_posts.scss` to the following:
+
+```css
+.delete-post,
+.like-post{
+  i{
+    pointer-events: none;
+  }
+}
+```
+
+And finally, let's update our app to sort our posts by like count automatically. Update `client/controllers/home.js` to the following:
+
+```javascript
+Template.home.helpers({
+  // check if user is an admin
+  'post': function() {
+    return Posts.find({}, {sort: {likes: -1} });
+  }
+});
+```
+
+Now we can vote an submitted posts and they will sort by vote!
+
+Congrats! The app should be firing on all cylinders locally! Follow the next part of the lesson to deploy!
+
 ##END OF SECOND LESSON
 ------------------------
 This section will cover whatever app this ends up being.
@@ -1554,6 +1692,7 @@ git push heroku master
 
 ` `
 
+NOTE: Follow the steps for creating an admin locally but do it on heroku. update your settings file locally, then run this is terminal:
 ```
 heroku config:add METEOR_SETTINGS="$(cat settings.json)"
 ```
@@ -1573,7 +1712,7 @@ heroku config:add METEOR_SETTINGS="$(cat settings.json)"
 
 
 In the shell with your device connected run:
-
+NOTE: Get the mongo url from your provisioned addon through herokus CLI or dashboard
 ```
 MONGO_URL="mongodb://<username>:<password>@<mlab url>.mlab.com:<portnumber>/<dbname>" meteor run android-device --mobile-server=https://<appname>.herokuapp.com
 ```

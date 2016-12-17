@@ -2,6 +2,10 @@ Template.postPartial.events({
   "click .delete-post": function () {
     var postId = event.target.dataset.id
     Meteor.call('deletePost', postId);
+  },
+  "click .like-post": function () {
+    var postId = event.target.dataset.id
+    Meteor.call('likePost', postId);
   }
 });
 
