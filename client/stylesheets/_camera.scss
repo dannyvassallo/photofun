@@ -1,0 +1,30 @@
+.camera-popup{
+  width: 100% !important;
+  max-width: 100% !important;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  margin-left: 0 !important;
+  border-radius: 0;
+  padding: 0;
+  @extend .container;
+  .viewfinder,
+  .center{
+    margin: 0 auto;
+  }
+  img{
+    width: 100% !important;
+  }
+  video{
+    width: 100% !important;
+    height: 100%;
+  }
+  button{
+    @extend .btn;
+    width: 46%;
+  }
+  div{
+    max-width: 640px;
+  }
+}

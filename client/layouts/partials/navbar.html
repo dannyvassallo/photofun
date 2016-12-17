@@ -4,7 +4,7 @@
       <div class="row">
         <div class="col s12">
           <div class="nav-wrapper">
-            <a href="/" class="brand-logo">MeteoReddit</a>
+            <a href="/" class="brand-logo">PhotoFun</a>
             <a href="#" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
             <ul class="right hide-on-med-and-down">
               {{#if isAdminUser}}
@@ -17,6 +17,9 @@
               {{/if}}
             </ul>
             <ul class="side-nav" id="mobile-nav">
+              {{#if isAdminUser}}
+                <li><a href="/usermgmt">User Management</a></li>
+              {{/if}}
               {{#if currentUser}}
                 <li><a href="/sign-out">Sign Out</a></li>
               {{else}}

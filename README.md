@@ -1,6 +1,6 @@
-#MeteoReddit
+#PhotoFun
 
-The fastest built reddit clone you've ever seen homie.
+Not quite a reddit clone, but an app that takes photos and lets you vote on them like reddit does.
 
 ###What's in it?
 
@@ -26,9 +26,13 @@ The fastest built reddit clone you've ever seen homie.
  * [Not Found And Authentication Routes](#404)
  * [Authorization](#auth)
 
-#####Lesson 2
+#####Lesson 2: Photo Voting
 
-Coming Next
+* [Making Posts](#posts)
+* [Styling Camera Package](#camera)
+* [Pub / Sub and Rendering Posts](#pubsub)
+* [Deleting Posts](#delete)
+* [Voting on Posts](#votes)
 
 #####Lesson 3: Deployment & App
 
@@ -197,7 +201,7 @@ Let's over write our `client/main.html` with some new information. Paste in the 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <title>MeteoReddit</title>
+  <title>PhotoFun</title>
 </head>
 <body>
 </body>
@@ -232,7 +236,7 @@ In your `layouts` folder, create another folder called `partials`. In the new `p
       <div class="row">
         <div class="col s12">
           <div class="nav-wrapper">
-            <a href="/" class="brand-logo">MeteoReddit</a>
+            <a href="/" class="brand-logo">PhotoFun</a>
             <a href="#" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
             <ul class="right hide-on-med-and-down">
               {{#if currentUser}}
@@ -637,7 +641,7 @@ And change `client > layouts > partials > navbar.html` to match this:
       <div class="row">
         <div class="col s12">
           <div class="nav-wrapper">
-            <a href="/" class="brand-logo">MeteoReddit</a>
+            <a href="/" class="brand-logo">PhotoFun</a>
             <a href="#" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
             <ul class="right hide-on-med-and-down">
               {{#if isAdminUser}}
@@ -650,6 +654,9 @@ And change `client > layouts > partials > navbar.html` to match this:
               {{/if}}
             </ul>
             <ul class="side-nav" id="mobile-nav">
+              {{#if isAdminUser}}
+                <li><a href="/usermgmt">User Management</a></li>
+              {{/if}}
               {{#if currentUser}}
                 <li><a href="/sign-out">Sign Out</a></li>
               {{else}}
@@ -842,7 +849,793 @@ Checkout this first portion alone [here](https://github.com/dannyvassallo/meteor
 
 ##BEGIN SECOND LESSON
 
-COMING SOON
+<a name="posts"></a>
+###Making Posts
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+
+Let's make a reference to our first collection. Dat's right -- we're up in the shiz now.
+
+In the `lib` folder, create a file called `collections.js`. Inside put the following:
+
+```javascript
+// Init Posts collection on mongodb
+Posts = new Mongo.Collection('posts');
+```
+
+Now we can insert a post into the Posts collection -- kind of. There are a few more things to take care of first.
+
+We're going to create some methods. Methods are a way for us to write calls to mongo that we can invoke within our controllers. I like to think of it as an additional controller layer.
+
+For the first time we're going to create files in our server folder. First, let's make one called `postmethods.js` and put the following in it:
+
+```javascript
+Meteor.methods({
+  addPost: function (data) {
+    Posts.insert({
+      image: data,
+      createdAt: new Date().toLocaleString(),
+      likes: 0,
+      user: {
+        _id: Meteor.user()._id,
+        email: Meteor.user().emails[0].address
+      }
+    });
+  }
+});
+```
+
+Next, we're going to add some new functionality to our app. For our posts, the content will be pulled from your camera. There is a meteor package to assist with this.
+
+Let's add that now using the command line. In your project directory, run this: `meteor add mdg:camera`.
+
+Now that we've added this dependency, you should see a new package added to your `./meteor/packages` file. like this:
+
+```
+fourseven:scss
+poetic:materialize-scss
+useraccounts:materialize
+useraccounts:core
+useraccounts:iron-routing
+accounts-password@1.3.1
+browser-policy@1.0.9
+browser-policy-common@1.0.11
+browser-policy-content@1.0.12
+browser-policy-framing@1.0.12
+alanning:roles
+cunneen:accounts-admin-materializecss
+mdg:camera
+```
+
+Cool. Lets write a new controller.
+
+In your `client/controllers/` folder, make a new file called `newpost.js`. Put the following inside of it:
+
+```javascript
+Template.newPost.events({
+  "click #newPost": function (e) {
+    e.preventDefault();
+
+    MeteorCamera.getPicture(function (err, data) {
+      if (!err) {
+        Meteor.call("addPost", data);
+      }
+    });
+
+    return false;
+  }
+});
+```
+
+If you look in this code, you'll see that we are using the new [mdg:camera](https://atmospherejs.com/mdg/camera) package that we just added as well as calling the serverside method we've created. Dope. You can also see that we've written an event listener for a blaze template called `newPost` and we're listening for click on an element with the id `#newPost`. Let's make this event's dream a reality and create a template for it to interact with.
+
+As a note before we move on -- let's discuss the new package. The way it works, is that it will pull a base 64 image from your camera, and store it in mongo. This means no s3. no credentials to store in a bucket, just quick easy image capture where `data` is the base64 image in the callback.
+
+Now, lets create that template. We're going to do this like a react component and render the partial wherever we feel like.
+
+In `client/views/` make a new folder called `partials`.
+
+In the new `partials` folder, create a file called `newPost.html`. In that file, put the following:
+
+```html
+<template name="newPost">
+  {{#if currentUser}}
+    <div id="newPost" class="fixed-action-btn">
+      <a class="btn-floating btn-large red">
+        <i class="large material-icons">add</i>
+      </a>
+    </div>
+  {{/if}}
+</template>
+```
+
+Before this will work at all, we need to update our browser policy to allow us to take photos with our app. update `server/main.js` with the following:
+
+```
+import { Meteor } from 'meteor/meteor';
+import { BrowserPolicy } from 'meteor/browser-policy-common';
+
+Meteor.startup(() => {
+  BrowserPolicy.content.allowOriginForAll('*');
+  BrowserPolicy.content.allowImageOrigin("blob:");
+  var constructedCsp = BrowserPolicy.content._constructCsp();
+  BrowserPolicy.content.setPolicy(constructedCsp +" media-src blob:;");
+  // code to run on server at startup
+
+  // create admin from settings
+  if (Meteor.users.findOne(Meteor.settings.adminId)){
+    Roles.addUsersToRoles(Meteor.settings.adminId, ['admin']);
+  }
+});
+```
+
+Now let's render that in the homepage.
+
+Change the homepage's content to match this:
+
+```html
+<template name="home">
+  <div class="container">
+    <div class="row">
+      <div class="col s12">
+        <h1>Home</h1>
+        <p>This is the index path.</p>
+      </div>
+    </div>
+  </div>
+  {{> newPost}}
+</template>
+```
+
+Now we get a fixed button that opens our new camera package.
+
+The button overlaps the footer so let's create a new layout template for our homepage that doesn't have one.
+
+Duplicate the `masterLayout.html` in the `client/views/layouts/` folder and name it `homepageLayout.html`.
+
+Change it's content to match this:
+
+```html
+<template name="homepageLayout">
+  {{> yield region='navbar'}}
+    <main>
+      {{> yield}}
+    </main>
+</template>
+```
+
+Create a new controller for it's navbar in `client/controllers` called `homepageLayout.js`.
+Put the following in it:
+
+```javascript
+Template.homepageLayout.rendered = function () {
+  $(".button-collapse").sideNav();
+};
+```
+
+Update the router to match the following so the homepage view can get the new template:
+
+```javascript
+// In the configuration, we declare the layout, 404, loading,
+// navbar, and footer templates.
+Router.configure({
+  layoutTemplate: 'masterLayout',
+  loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
+  yieldTemplates: {
+    navbar: {to: 'navbar'},
+    footer: {to: 'footer'},
+  }
+});
+
+// In the map, we set our routes.
+Router.map(function () {
+  // Index Route
+  this.route('home', {
+    path: '/',
+    template: 'home',
+    layoutTemplate: 'homepageLayout'
+  });
+  this.route('loading', {
+    path: 'loading',
+    template: 'loading',
+    layoutTemplate: 'masterLayout'
+  });
+  // User Mgmt Route
+  this.route('usermgmt', {
+    path: '/usermgmt',
+    template: 'userManagement',
+    layoutTemplate: 'masterLayout',
+    onBeforeAction: function() {
+      if (Meteor.loggingIn()) {
+          this.render(this.loadingTemplate);
+      } else if(!Roles.userIsInRole(Meteor.user(), ['admin'])) {
+          this.redirect('/');
+      }
+      this.next();
+    },
+    loadingTemplate: 'loading'
+  });
+  // Sign In Route
+  AccountsTemplates.configureRoute('signIn', {
+      name: 'signin',
+      path: '/sign-in',
+      template: 'signIn',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Up Route
+  AccountsTemplates.configureRoute('signUp', {
+      name: 'sign-up',
+      path: '/sign-up',
+      template: 'signUp',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Out Route
+  this.route('/sign-out', function(){
+      Meteor.logout(function(err) {
+          if (err) alert('There was a problem logging you out.');
+          Router.go("/");
+      });
+      Router.go("/");
+  });
+});
+```
+
+If you click the plus button now, you can grab pictures from your camera on any device. Pretty sweet. But the UI looks like crap and you'll notice that if you open it. Let's extend some sass classes to the UI and make it more materialized!
+
+<a name="camera"></a>
+###Styling Camera Package
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+In your `main.scss` add this line:
+```css
+@import "./stylesheets/_camera.scss";
+```
+
+Next we'll need to create that file. In your `client/stylesheets/` folder, make a file called `_camera.scss` and put the following in it:
+
+```css
+.camera-popup{
+  width: 100% !important;
+  max-width: 100% !important;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  margin-left: 0 !important;
+  border-radius: 0;
+  padding: 0;
+  @extend .container;
+  .viewfinder,
+  .center{
+    margin: 0 auto;
+  }
+  img{
+    width: 100% !important;
+  }
+  video{
+    width: 100% !important;
+    height: 100%;
+  }
+  button{
+    @extend .btn;
+    width: 46%;
+  }
+  div{
+    max-width: 640px;
+  }
+}
+```
+
+Here, we take advantage of sass and extend some materialize classes to the stuff baked into the camera app. A little dirty, but it works great.
+
+<a name="pubsub"></a>
+###Pub/Sub and Rendering Posts
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+We need to publish the posts collection from our server to actually do anything with it. Lets do that now.
+
+In your `server/main.js` file, change it to look like the following:
+
+```javascript
+import { Meteor } from 'meteor/meteor';
+import { BrowserPolicy } from 'meteor/browser-policy-common';
+
+Meteor.startup(() => {
+  BrowserPolicy.content.allowOriginForAll('*');
+  BrowserPolicy.content.allowImageOrigin("blob:");
+  var constructedCsp = BrowserPolicy.content._constructCsp();
+  BrowserPolicy.content.setPolicy(constructedCsp +" media-src blob:;");
+  // code to run on server at startup
+
+  // create admin from settings
+  if (Meteor.users.findOne(Meteor.settings.adminId)){
+    Roles.addUsersToRoles(Meteor.settings.adminId, ['admin']);
+  }
+});
+
+Meteor.publish("posts", function () {
+  return Posts.find();
+});
+```
+
+We'll update our homepage to subscribe to this new publication and change the router to
+show the loader while it's querying the posts collection.
+
+Upate your router to the following:
+
+```javascript
+// In the configuration, we declare the layout, 404, loading,
+// navbar, and footer templates.
+Router.configure({
+  layoutTemplate: 'masterLayout',
+  loadingTemplate: 'loading',
+  notFoundTemplate: 'notFound',
+  yieldTemplates: {
+    navbar: {to: 'navbar'},
+    footer: {to: 'footer'},
+  }
+});
+
+// In the map, we set our routes.
+Router.map(function () {
+  // Index Route
+  this.route('home', {
+    path: '/',
+    template: 'home',
+    layoutTemplate: 'homepageLayout',
+    waitOn: function(){
+      var collections = [
+        Meteor.subscribe('posts')
+      ];
+      return collections;
+    }
+  });
+  this.route('loading', {
+    path: 'loading',
+    template: 'loading',
+    layoutTemplate: 'masterLayout'
+  });
+  // User Mgmt Route
+  this.route('usermgmt', {
+    path: '/usermgmt',
+    template: 'userManagement',
+    layoutTemplate: 'masterLayout',
+    onBeforeAction: function() {
+      if (Meteor.loggingIn()) {
+          this.render(this.loadingTemplate);
+      } else if(!Roles.userIsInRole(Meteor.user(), ['admin'])) {
+          this.redirect('/');
+      }
+      this.next();
+    },
+    loadingTemplate: 'loading'
+  });
+  // Sign In Route
+  AccountsTemplates.configureRoute('signIn', {
+      name: 'signin',
+      path: '/sign-in',
+      template: 'signIn',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Up Route
+  AccountsTemplates.configureRoute('signUp', {
+      name: 'sign-up',
+      path: '/sign-up',
+      template: 'signUp',
+      layoutTemplate: 'masterLayout',
+      redirect: '/',
+  });
+  // Sign Out Route
+  this.route('/sign-out', function(){
+      Meteor.logout(function(err) {
+          if (err) alert('There was a problem logging you out.');
+          Router.go("/");
+      });
+      Router.go("/");
+  });
+});
+```
+
+Now our homepage will show a loader when the posts are loading. Dope dope dope.
+
+Let's actually do something with the posts that we're creating now. Make a new file under
+`client/controllers` called `home.js` and put the following in it:
+
+```javascript
+Template.home.helpers({
+  // check if user is an admin
+  'post': function() {
+    return Posts.find();
+  }
+});
+```
+
+Update your `home.html` file in `client/views/pages/` to match the following:
+
+```html
+<template name="home">
+  <div class="container">
+    <div class="row">
+      <div class="col s12">
+        <h1>Home</h1>
+        <p>This is the index path.</p>
+      </div>
+    </div>
+  </div>
+  {{#each post}}
+    <p>{{this.image}}</p>
+  {{/each}}
+  {{> newPost}}
+</template>
+```
+
+if you look at your home route now and take some pictures, you'll see that we're able to
+simultaneously populate and render the collection. super tight.
+
+Let's make this not look stupid now and start rendering some pictures.
+
+Create a new file in `client/views/partials/` called `postPartial.html` with the following in it:
+
+```html
+<template name="postPartial">
+  <div class="col s12 m6 l4">
+    <div class="card">
+      <div class="card-image">
+        <img src="{{this.image}}">
+      </div>
+      <div class="card-content">
+        <p>Posted by {{this.user.email}} {{this.createdAt}}</p>
+      </div>
+      <div class="card-action">
+        <a href="#">This is a link</a>
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+Update your `client/views/pages/home.html` to match the following:
+
+```html
+<template name="home">
+  <div class="container">
+    <div class="row">
+      {{#each post}}
+        {{> postPartial}}
+      {{/each}}
+    </div>
+  </div>
+  {{> newPost}}
+</template>
+```
+
+And boom! Pictures galore! Woop woop!
+
+You'll notice the timestamp in the post is a locale string -- lets use moment to fix that.
+
+run this in your terminal:
+
+```
+meteor add lbee:moment-helpers
+```
+
+And update `client/views/pages/home.html` to look like this:
+
+```html
+<template name="postPartial">
+  <div class="col s12 m6 l4">
+    <div class="card">
+      <div class="card-image">
+        <img src="{{this.image}}">
+      </div>
+      <div class="card-content">
+        <p>Posted by {{this.user.email}} {{moCalendar this.createdAt}}</p>
+      </div>
+      <div class="card-action">
+        <a href="#">This is a link</a>
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+Sweet -- looking better.
+
+<a name="delete"></a>
+###Deleting Posts
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+
+Now let's add the ability to delete a photo as an admin OR the creator.
+
+In our `server/postmethods.js`, let's add a new method. Change it to look like below:
+
+```javascript
+Meteor.methods({
+  addPost: function (data) {
+    Posts.insert({
+      image: data,
+      createdAt: new Date().toLocaleString(),
+      likes: 0,
+      user: {
+        _id: Meteor.user()._id,
+        email: Meteor.user().emails[0].address
+      }
+    });
+  },
+  deletePost: function(postId){
+    var post = Posts.findOne({_id: postId }),
+    postUserId = post.user._id;
+    currentUserId = Meteor.userId();
+    if(postUserId === currentUserId) {
+      console.log("User deleted post.")
+      Posts.remove({_id: postId});
+    } else if(Roles.userIsInRole(Meteor.user(), ['admin'])){
+      console.log("Admin deleted post.")
+      Posts.remove({_id: postId});
+    } else {
+      console.log("Someone's trying to delete posts and shouldn't be.")
+    }
+  }
+});
+```
+
+Then, let's write an event for our deletion method in our posts partial. In `client/controllers/` create a file called
+`postPartial.js` and put the following in it:
+
+```javascript
+Template.postPartial.events({
+  "click .delete-post": function () {
+    var postId = event.target.dataset.id
+    Meteor.call('deletePost', postId);
+  }
+});
+```
+
+Now we just need to make it so our user doesnt click on the icon with a little css magic. Update the main.scss with the following line:
+
+```css
+@import "./stylesheets/_posts.scss";
+```
+
+and create a file called `_posts.scss` in `client/stylesheets/` with the following in it:
+
+```css
+.delete-post{
+  i{
+    pointer-events: none;
+  }
+}
+```
+
+Now when we target the button, we for sure get the id for the call.
+
+We want to update our template to add a delete button but we need a helper to
+only show it to the admin and the creator. Let's do that now.
+
+Update `client/controllers/postPartial.js` to container the following:
+
+```javascript
+Template.postPartial.events({
+  "click .delete-post": function () {
+    var postId = event.target.dataset.id
+    Meteor.call('deletePost', postId);
+  }
+});
+
+Template.postPartial.helpers({
+  'isAdminOrCreator': function(post) {
+    postUserId = post.user._id;
+    currentUserId = Meteor.userId();
+    if(postUserId === currentUserId) {
+      return true
+    } else if(Roles.userIsInRole(Meteor.user(), ['admin'])){
+      return true
+    } else {
+      return false
+    }
+  }
+});
+```
+
+And when we update our view to use the helper we get fully authorized deletion.
+
+Update `client/views/postPartial.html` to look like this:
+
+```html
+<template name="postPartial">
+  <div class="col s12 m6 l4">
+    <div class="card">
+      <div class="card-image">
+        <img src="{{this.image}}">
+      </div>
+      <div class="card-content">
+        <p>Posted by {{this.user.email}} {{moCalendar this.createdAt}}</p>
+      </div>
+      <div class="card-action">
+        {{#if isAdminOrCreator this}}
+          <div class="btn red delete-post" data-id="{{this._id}}"><i class="material-icons">delete</i></div>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+<a name="votes"></a>
+###Voting On Posts
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+So now we want our users to be able to vote on posts in the form of a "like".
+Let's make a button available to a signed in user that will "upvote" or "like" our posts.
+
+Update your `client/views/partials/postPartial.html` to look like the following:
+
+```html
+<template name="postPartial">
+  <div class="col s12 m6 l4">
+    <div class="card">
+      <div class="card-image">
+        <img src="{{this.image}}">
+      </div>
+      <div class="card-content">
+        <p>Posted by {{this.user.email}} {{moCalendar this.createdAt}}</p>
+      </div>
+      <div class="card-action">
+        {{#if isAdminOrCreator this}}
+          <div class="btn red delete-post" data-id="{{this._id}}"><i class="material-icons">delete</i></div>
+        {{/if}}
+        {{#if currentUser}}
+          <div class="btn like-post" data-id="{{this._id}}"><i class="material-icons">thumb_up</i></div>
+        {{/if}}
+        <p>{{this.likes}} Likes</p>
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+Let's write a method to increment the votes on posts. Update `server/postmethods.js` to look like the following:
+
+```javascript
+Meteor.methods({
+  addPost: function (data) {
+    Posts.insert({
+      image: data,
+      createdAt: new Date().toLocaleString(),
+      likes: 0,
+      user: {
+        _id: Meteor.user()._id,
+        email: Meteor.user().emails[0].address
+      }
+    });
+  },
+  likePost: function(postId){
+    userSignedIn = Meteor.user() || false;
+    if(userSignedIn){
+      Posts.update({_id: postId}, {$inc: {likes: 1} });
+    }
+  },
+  deletePost: function(postId){
+    var post = Posts.findOne({_id: postId }),
+    postUserId = post.user._id;
+    currentUserId = Meteor.userId();
+    if(postUserId === currentUserId) {
+      console.log("User deleted post.")
+      Posts.remove({_id: postId});
+    } else if(Roles.userIsInRole(Meteor.user(), ['admin'])){
+      console.log("Admin deleted post.")
+      Posts.remove({_id: postId});
+    } else {
+      console.log("Someone's trying to delete posts and shouldn't be.")
+    }
+  }
+});
+```
+
+And let's update `client/controllers/postPartial.js` to trigger an increment on the like count:
+
+```javascript
+Template.postPartial.events({
+  "click .delete-post": function () {
+    var postId = event.target.dataset.id
+    Meteor.call('deletePost', postId);
+  },
+  "click .like-post": function () {
+    var postId = event.target.dataset.id
+    Meteor.call('likePost', postId);
+  }
+});
+
+Template.postPartial.helpers({
+  'isAdminOrCreator': function(post) {
+    postUserId = post.user._id;
+    currentUserId = Meteor.userId();
+    if(postUserId === currentUserId) {
+      return true
+    } else if(Roles.userIsInRole(Meteor.user(), ['admin'])){
+      return true
+    } else {
+      return false
+    }
+  }
+});
+```
+
+We need to do the icon fix for our button again so lets update `client/stylesheets/_posts.scss` to the following:
+
+```css
+.delete-post,
+.like-post{
+  i{
+    pointer-events: none;
+  }
+}
+```
+
+And finally, let's update our app to sort our posts by like count automatically. Update `client/controllers/home.js` to the following:
+
+```javascript
+Template.home.helpers({
+  // check if user is an admin
+  'post': function() {
+    return Posts.find({}, {sort: {likes: -1} });
+  }
+});
+```
+
+Now we can vote an submitted posts and they will sort by vote!
+
+Congrats! The app should be firing on all cylinders locally! Follow the next part of the lesson to deploy!
 
 ##END OF SECOND LESSON
 ------------------------
@@ -881,7 +1674,7 @@ heroku addons:create mongolab
 ```
 heroku config:set ROOT_URL="https://<appname>.herokuapp.com" # or other URL
 ```
-Once that's done, you can deploy your app using this build pack any time by pushing to heroku:
+Once thats done, you can deploy your app using this build pack any time by pushing to heroku:
 ```
 git push heroku master
 ```
@@ -899,6 +1692,7 @@ git push heroku master
 
 ` `
 
+NOTE: Follow the steps for creating an admin locally but do it on heroku. update your settings file locally, then run this is terminal:
 ```
 heroku config:add METEOR_SETTINGS="$(cat settings.json)"
 ```
@@ -918,7 +1712,7 @@ heroku config:add METEOR_SETTINGS="$(cat settings.json)"
 
 
 In the shell with your device connected run:
-
+NOTE: Get the mongo url from your provisioned addon through herokus CLI or dashboard
 ```
 MONGO_URL="mongodb://<username>:<password>@<mlab url>.mlab.com:<portnumber>/<dbname>" meteor run android-device --mobile-server=https://<appname>.herokuapp.com
 ```
