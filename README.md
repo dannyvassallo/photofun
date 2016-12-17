@@ -1,4 +1,4 @@
-#MeteoReddit
+#PhotoFun
 
 Not quite a reddit clone, but an app that takes photos and lets you vote on them like reddit does.
 
@@ -201,7 +201,7 @@ Let's over write our `client/main.html` with some new information. Paste in the 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <title>MeteoReddit</title>
+  <title>PhotoFun</title>
 </head>
 <body>
 </body>
@@ -236,7 +236,7 @@ In your `layouts` folder, create another folder called `partials`. In the new `p
       <div class="row">
         <div class="col s12">
           <div class="nav-wrapper">
-            <a href="/" class="brand-logo">MeteoReddit</a>
+            <a href="/" class="brand-logo">PhotoFun</a>
             <a href="#" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
             <ul class="right hide-on-med-and-down">
               {{#if currentUser}}
@@ -641,7 +641,7 @@ And change `client > layouts > partials > navbar.html` to match this:
       <div class="row">
         <div class="col s12">
           <div class="nav-wrapper">
-            <a href="/" class="brand-logo">MeteoReddit</a>
+            <a href="/" class="brand-logo">PhotoFun</a>
             <a href="#" data-activates="mobile-nav" class="button-collapse"><i class="material-icons">menu</i></a>
             <ul class="right hide-on-med-and-down">
               {{#if isAdminUser}}
