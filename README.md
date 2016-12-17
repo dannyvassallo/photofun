@@ -1004,7 +1004,7 @@ Change it's content to match this:
 </template>
 ```
 
-Update the router to match the following so the hompage view can get the new template:
+Update the router to match the following so the homepage view can get the new template:
 
 ```javascript
 // In the configuration, we declare the layout, 404, loading,
@@ -1074,7 +1074,7 @@ Router.map(function () {
 });
 ```
 
-If you click plus button now, you can grab pictures from your camera on any device. Pretty sweet. But the UI looks like crap and you'll notce that if you open it. Let's extend some sass classes to the UI and make it more materialized!
+If you click the plus button now, you can grab pictures from your camera on any device. Pretty sweet. But the UI looks like crap and you'll notice that if you open it. Let's extend some sass classes to the UI and make it more materialized!
 
 <a name="camera"></a>
 ###Styling Camera Package
