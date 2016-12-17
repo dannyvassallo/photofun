@@ -940,11 +940,11 @@ In the new `partials` folder, create a file called `newPost.html`. In that file,
 ```html
 <template name="newPost">
   {{#if currentUser}}
-  <div id="newPost" class="fixed-action-btn">
-    <a class="btn-floating btn-large red">
-      <i class="large material-icons">add</i>
-    </a>
-  </div>
+    <div id="newPost" class="fixed-action-btn">
+      <a class="btn-floating btn-large red">
+        <i class="large material-icons">add</i>
+      </a>
+    </div>
   {{/if}}
 </template>
 ```
@@ -1089,6 +1089,47 @@ If you click the plus button now, you can grab pictures from your camera on any 
 
 ` `
 
+In your `main.scss` add this line:
+```css
+@import "./stylesheets/_camera.scss";
+```
+
+Next we'll need to create that file. In your `client/stylesheets/` folder, make a file called `_camera.scss` and put the following in it:
+
+```css
+.camera-popup{
+  width: 100% !important;
+  max-width: 100% !important;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  margin-left: 0 !important;
+  border-radius: 0;
+  padding: 0;
+  @extend .container;
+  .viewfinder,
+  .center{
+    margin: 0 auto;
+  }
+  img{
+    width: 100% !important;
+  }
+  video{
+    width: 100% !important;
+    height: 100%;
+  }
+  button{
+    @extend .btn;
+    width: 46%;
+  }
+  div{
+    max-width: 640px;
+  }
+}
+```
+
+Here, we take advantage of sass and extend some materialize classes to the stuff baked into the camera app. A little dirty, but it works great.
 
 ##END OF SECOND LESSON
 ------------------------
