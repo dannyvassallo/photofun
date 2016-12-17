@@ -1667,20 +1667,45 @@ Congrats! The app should be firing on all cylinders locally! Follow the next par
 
 ` `
 
-Update `client/controllers/navbar.js` to this to close the sidebar on mobile when a link is clicked.
+Update `client/controllers/homepageLayout.js` to this to close the sidebar on mobile when a link is clicked.
 
 ```javascript
-Template.navbar.helpers({
-  // check if user is an admin
-  'isAdminUser': function() {
-    return Roles.userIsInRole(Meteor.user(), ['admin']);
-  }
-});
+Template.homepageLayout.rendered = function () {
+  $(".button-collapse").sideNav();
+};
 
-Template.navbar.events({    
+Template.homepageLayout.events({
     "click ul#mobile-nav.side-nav li a": function(event){
       $(".button-collapse").sideNav("hide");
     }
+});
+```
+
+Update `client/controllers/masterLayout.js` to this to close the sidebar on mobile when a link is clicked.
+
+```javascript
+Template.masterLayout.rendered = function () {
+  $(".button-collapse").sideNav();
+};
+
+Template.masterLayout.events({
+    "click ul#mobile-nav.side-nav li a": function(event){
+      $(".button-collapse").sideNav("hide");
+    }
+});
+```
+
+Update the signout route to this:
+
+```javascript
+// Sign Out Route
+this.route('/sign-out', function(){
+    Meteor.logout(function(err) {
+        if (err) alert('There was a problem logging you out.');
+        Router.go("/");
+        $(".button-collapse").sideNav("hide");
+    });
+    Router.go("/");
 });
 ```
 
