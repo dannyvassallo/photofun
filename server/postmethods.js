@@ -9,6 +9,7 @@ Meteor.methods({
         email: Meteor.user().emails[0].address
       }
     });
+    $('#masonry-grid').masonry('layout');
   },
   likePost: function(postId){
     userSignedIn = Meteor.user() || false;
@@ -23,9 +24,11 @@ Meteor.methods({
     if(postUserId === currentUserId) {
       console.log("User deleted post.")
       Posts.remove({_id: postId});
+      $('#masonry-grid').masonry('layout');
     } else if(Roles.userIsInRole(Meteor.user(), ['admin'])){
       console.log("Admin deleted post.")
       Posts.remove({_id: postId});
+      $('#masonry-grid').masonry('layout');
     } else {
       console.log("Someone's trying to delete posts and shouldn't be.")
     }

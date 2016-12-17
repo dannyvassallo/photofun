@@ -50,7 +50,7 @@ Not quite a reddit clone, but an app that takes photos and lets you vote on them
 * [Deleting Posts](#delete)
 * [Voting on Posts](#votes)
 * [BugFix: Navbar](#bugfix)
-* [UI Tweaks](#uitweaks)
+* [UI Tweaks WIP](#uitweaks)
 
 #####Lesson 3: Deployment & App
 
@@ -1707,59 +1707,6 @@ this.route('/sign-out', function(){
     Router.go("/");
 });
 ```
-<a name="uitweaks"></a>
-##UI Tweaks
-
-` `
-
-`-----------------------------------------------------`
-
-[Back To Top 🔼](#dir)
-
-`-----------------------------------------------------`
-
-` `
-
-Let's get masonry going on in here. Run the following in your terminal:
-
-```
-meteor add gliese:masonry-desandro
-```
-
-Add a target id (`#masonry-grid`) to the row of pictures for masonry in `client/views/pages/home.html`:
-
-```html
-<template name="home">
-  <div class="container">
-    <div id="masonry-grid" class="row">
-      {{#each post}}
-        {{> postPartial}}
-      {{/each}}
-    </div>
-  </div>
-  {{> newPost}}
-</template>
-```
-
-Now we need to initialize masonry in `client/controllers/home.js`. Update it to the following:
-
-```javascript
-Template.home.helpers({
-  // check if user is an admin
-  'post': function() {
-    return Posts.find({}, {sort: {likes: -1} });
-  }
-});
-
-Template.home.rendered = function () {
-  var $container = $('#masonry-grid');
-  // initialize
-  $container.masonry({
-    columnWidth: '.col',
-    itemSelector: '.col',
-  });
-};
-```
 
 Fix the z-index on the action button. Replace `client/stylesheets/_posts.scss` with the following:
 ```css
@@ -1814,6 +1761,60 @@ Update `client/layouts/partials/navbar.html` to be fixed:
     </nav>
   </div>
 </template>
+```
+
+<a name="uitweaks"></a>
+##UI Tweaks WIP
+
+` `
+
+`-----------------------------------------------------`
+
+[Back To Top 🔼](#dir)
+
+`-----------------------------------------------------`
+
+` `
+
+Let's get masonry going on in here. Run the following in your terminal:
+
+```
+meteor add gliese:masonry-desandro
+```
+
+Add a target id (`#masonry-grid`) to the row of pictures for masonry in `client/views/pages/home.html`:
+
+```html
+<template name="home">
+  <div class="container">
+    <div id="masonry-grid" class="row">
+      {{#each post}}
+        {{> postPartial}}
+      {{/each}}
+    </div>
+  </div>
+  {{> newPost}}
+</template>
+```
+
+Now we need to initialize masonry in `client/controllers/home.js`. Update it to the following:
+
+```javascript
+Template.home.helpers({
+  // check if user is an admin
+  'post': function() {
+    return Posts.find({}, {sort: {likes: -1} });
+  }
+});
+
+Template.home.rendered = function () {
+  var $container = $('#masonry-grid');
+  // initialize
+  $container.masonry({
+    columnWidth: '.col',
+    itemSelector: '.col',
+  });
+};
 ```
 
 Congrats! The app should be firing on all cylinders locally! Follow the next part of the lesson to deploy!
