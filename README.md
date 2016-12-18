@@ -1924,11 +1924,31 @@ This will get you started setting up your mobile sdks.
 
 Every phone / machine is different so you may run into certain issues. on the iOS simulator you may have issues with native camera support. Try it on a device or on android emulation.
 
-In the shell with your device connected run:
-NOTE: Get the mongo url from your provisioned addon through herokus CLI or dashboard
+
+Get your mongo uri. Visit the dashboard for your app on dashboard.heroku.com.
+Visit the mongo add on panel by doing the following:
+
+![mongo screen1](https://s3-us-west-2.amazonaws.com/photofunmeteor/screen1.jpg)
+
+Copy your uri from here:
+
+![mongo screen2](https://s3-us-west-2.amazonaws.com/photofunmeteor/screen2.jpg)
+
+And create a new database user:
+
+![mongo screen3](https://s3-us-west-2.amazonaws.com/photofunmeteor/screen3.jpg)
+
+Leave Read-only unchecked:
+
+![mongo screen4](https://s3-us-west-2.amazonaws.com/photofunmeteor/screen4.jpg)
+
+Use your new credentials to finish the uri & fill in the blanks in this:
+
 ```
 MONGO_URL="mongodb://<username>:<password>@<mlab url>.mlab.com:<portnumber>/<dbname>" meteor run android-device --mobile-server=https://<appname>.herokuapp.com
 ```
+
+Then with your device connected, run your newly constructed meteor run and you should get your app running.
 
 <a name="icons"></a>
 ###Generating Icons and splashes
